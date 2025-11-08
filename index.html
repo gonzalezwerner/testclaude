@@ -49,6 +49,36 @@
       opacity: 0;
     }
 
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    @keyframes glow {
+      0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 105, 180, 0.8)); }
+      50% { filter: drop-shadow(0 0 30px rgba(255, 105, 180, 1)); }
+    }
+
+    .floating-hearts {
+      position: fixed; width: 100%; height: 100%; pointer-events: none;
+      z-index: 50; overflow: hidden;
+    }
+    .heart {
+      position: absolute; font-size: 30px; animation: rise 10s linear infinite;
+      opacity: 0.7; color: #ff69b4; text-shadow: 0 0 10px rgba(255, 105, 180, 0.8);
+    }
+    @keyframes rise {
+      0% { bottom: -50px; transform: translateX(0) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.7; }
+      90% { opacity: 0.7; }
+      100% { bottom: 110%; transform: translateX(100px) rotate(360deg); opacity: 0; }
+    }
+
     #control-panel {
       position: fixed;
       top: 20px;
@@ -160,6 +190,8 @@
   <p>✨ Eres mi universo ✨</p>
 </div>
 
+<div class="floating-hearts" id="floating-hearts"></div>
+
 <div id="portal-container"></div>
 
 <div id="info-panel">
@@ -221,20 +253,40 @@ function createRipple(button) {
   setTimeout(() => ripple.remove(), 600);
 }
 
+// Crear corazones flotantes
+function createFloatingHearts() {
+  const container = document.getElementById('floating-hearts');
+  const hearts = ['❤️', '💕', '💖', '💗', '💓', '💝', '💞', '💟'];
+
+  setInterval(() => {
+    const heart = document.createElement('div');
+    heart.className = 'heart';
+    heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+    heart.style.left = Math.random() * 100 + '%';
+    heart.style.animationDuration = (Math.random() * 5 + 8) + 's';
+    heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
+    container.appendChild(heart);
+
+    setTimeout(() => heart.remove(), 13000);
+  }, 800);
+}
+
+createFloatingHearts();
+
 class CosmicPortalVisualization {
   constructor() {
     this.params = {
       portalComplexity: 4,
-      crystalCount: 12,
+      crystalCount: 16,
       primaryColor: '#ff69b4',
       secondaryColor: '#ff1493',
       accentColor: '#ffc0cb',
       vortexColor: '#ff85c1',
-      rotationSpeed: 0.3,
+      rotationSpeed: 0.4,
       bloomEnabled: true,
-      bloomStrength: 1.5,
-      bloomRadius: 0.8,
-      bloomThreshold: 0.15,
+      bloomStrength: 2.0,
+      bloomRadius: 1.0,
+      bloomThreshold: 0.1,
       portalIntensity: 1.0,
       dimensionShift: 0
     };
@@ -345,22 +397,91 @@ class CosmicPortalVisualization {
     this.createPortalFrame();
     this.createEnergyParticles();
     this.createSpaceDistortion();
+    this.create3DHearts();
+    this.createLoveRoses();
+    this.createShimmeringStars();
+    this.createRainbowTrails();
   }
   
   activatePortal() {
     if (portalCooldown || portalEnergy < 25) return;
-    
+
     portalCooldown = true;
     portalEnergy = Math.max(0, portalEnergy - 25);
     this.updatePortalUI();
-    
+
     this.portalMaterials.forEach(mat => {
       if(mat.uniforms && mat.uniforms.pulseTime) {
           mat.uniforms.pulseTime.value = this.time;
       }
     });
-    
+
+    // Efecto de explosión de corazones
+    this.createHeartExplosion();
+
+    // Aumentar brillo temporalmente
+    const originalStrength = this.bloomPass.strength;
+    this.bloomPass.strength = 3.0;
+    setTimeout(() => { this.bloomPass.strength = originalStrength; }, 1000);
+
     setTimeout(() => { portalCooldown = false; }, 1000);
+  }
+
+  createHeartExplosion() {
+    const heartCount = 30;
+    const particles = [];
+
+    for (let i = 0; i < heartCount; i++) {
+      const heartShape = new THREE.Shape();
+      const x = 0, y = 0, scale = 0.2;
+      heartShape.moveTo(x + 0.5 * scale, y + 0.5 * scale);
+      heartShape.bezierCurveTo(x + 0.5 * scale, y + 0.3 * scale, x, y - 0.1 * scale, x, y + 0.3 * scale);
+      heartShape.bezierCurveTo(x, y + 0.6 * scale, x, y + 0.7 * scale, x + 0.5 * scale, y + 1.1 * scale);
+      heartShape.bezierCurveTo(x + 1.0 * scale, y + 0.7 * scale, x + 1.0 * scale, y + 0.6 * scale, x + 1.0 * scale, y + 0.3 * scale);
+      heartShape.bezierCurveTo(x + 1.0 * scale, y - 0.1 * scale, x + 0.5 * scale, y + 0.3 * scale, x + 0.5 * scale, y + 0.5 * scale);
+
+      const heartGeo = new THREE.ShapeGeometry(heartShape);
+      const heartMat = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(Math.random() > 0.5 ? this.params.primaryColor : this.params.accentColor),
+        transparent: true,
+        opacity: 1.0
+      });
+
+      const heart = new THREE.Mesh(heartGeo, heartMat);
+      const angle = (i / heartCount) * Math.PI * 2;
+      const speed = 0.05 + Math.random() * 0.1;
+
+      heart.velocity = new THREE.Vector3(
+        Math.cos(angle) * speed,
+        Math.random() * speed,
+        Math.sin(angle) * speed
+      );
+
+      this.scene.add(heart);
+      particles.push({ mesh: heart, life: 2.0 });
+    }
+
+    const updateParticles = () => {
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.mesh.position.add(p.mesh.velocity);
+        p.life -= 0.016;
+        p.mesh.material.opacity = p.life / 2.0;
+
+        if (p.life <= 0) {
+          this.scene.remove(p.mesh);
+          p.mesh.geometry.dispose();
+          p.mesh.material.dispose();
+          particles.splice(i, 1);
+        }
+      }
+
+      if (particles.length > 0) {
+        requestAnimationFrame(updateParticles);
+      }
+    };
+
+    updateParticles();
   }
   
   addPortalShader(material) {
@@ -671,20 +792,156 @@ class CosmicPortalVisualization {
               void main() {
                   vec3 viewDir = normalize(cameraPosition - vPos);
                   float fresnel = pow(1.0 - abs(dot(vNorm, viewDir)), 4.0);
-                  
+
                   float distortion = sin(vPos.x * 0.5 + time * 2.0) * cos(vPos.y * 0.7 + time * 1.5);
                   vec3 color = mix(color1, color2, distortion * 0.5 + 0.5 + dimensionShift * 0.3);
-                  
+
                   gl_FragColor = vec4(color, fresnel * 0.3);
               }
           `,
           transparent: true, blending: THREE.AdditiveBlending, depthWrite: false
       });
-      
+
       const distortion = new THREE.Mesh(geo, mat);
       this.scene.add(distortion);
       this.meshes.push(distortion);
       this.materials.push(mat);
+  }
+
+  create3DHearts() {
+    const heartCount = 8;
+    for (let i = 0; i < heartCount; i++) {
+      const heartShape = new THREE.Shape();
+      const x = 0, y = 0;
+      heartShape.moveTo(x + 0.5, y + 0.5);
+      heartShape.bezierCurveTo(x + 0.5, y + 0.3, x + 0.0, y - 0.1, x + 0.0, y + 0.3);
+      heartShape.bezierCurveTo(x + 0.0, y + 0.6, x + 0.0, y + 0.7, x + 0.5, y + 1.1);
+      heartShape.bezierCurveTo(x + 1.0, y + 0.7, x + 1.0, y + 0.6, x + 1.0, y + 0.3);
+      heartShape.bezierCurveTo(x + 1.0, y - 0.1, x + 0.5, y + 0.3, x + 0.5, y + 0.5);
+
+      const extrudeSettings = { depth: 0.4, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 0.1, bevelThickness: 0.1 };
+      const heartGeo = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
+
+      const heartMat = new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color(this.params.accentColor),
+        transparent: true, opacity: 0.9, metalness: 0.8, roughness: 0.2,
+        clearcoat: 1.0, clearcoatRoughness: 0.1,
+        emissive: new THREE.Color(this.params.accentColor).multiplyScalar(0.5)
+      });
+      this.addPortalShader(heartMat);
+
+      const heart = new THREE.Mesh(heartGeo, heartMat);
+      const angle = (i / heartCount) * Math.PI * 2;
+      const radius = 8;
+      heart.position.set(Math.cos(angle) * radius, Math.sin(angle * 0.5) * 3, Math.sin(angle) * radius);
+      heart.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+      heart.scale.set(0.8, 0.8, 0.8);
+
+      this.scene.add(heart);
+      this.meshes.push(heart);
+    }
+  }
+
+  createLoveRoses() {
+    const roseCount = 6;
+    for (let i = 0; i < roseCount; i++) {
+      const petalCount = 8;
+      const roseGroup = new THREE.Group();
+
+      for (let j = 0; j < petalCount; j++) {
+        const petalGeo = new THREE.SphereGeometry(0.3, 16, 16);
+        const petalMat = new THREE.MeshPhysicalMaterial({
+          color: new THREE.Color(j % 2 ? this.params.primaryColor : this.params.secondaryColor),
+          transparent: true, opacity: 0.8, metalness: 0.5, roughness: 0.3,
+          emissive: new THREE.Color(this.params.primaryColor).multiplyScalar(0.3)
+        });
+        this.addPortalShader(petalMat);
+
+        const petal = new THREE.Mesh(petalGeo, petalMat);
+        const angle = (j / petalCount) * Math.PI * 2;
+        petal.position.set(Math.cos(angle) * 0.4, 0, Math.sin(angle) * 0.4);
+        petal.scale.set(1, 0.3, 0.6);
+        roseGroup.add(petal);
+      }
+
+      const angle = (i / roseCount) * Math.PI * 2;
+      const radius = 5;
+      roseGroup.position.set(Math.cos(angle) * radius, Math.sin(i) * 4, Math.sin(angle) * radius);
+      this.scene.add(roseGroup);
+      this.meshes.push(roseGroup);
+    }
+  }
+
+  createShimmeringStars() {
+    const starCount = 50;
+    const positions = new Float32Array(starCount * 3);
+    const colors = new Float32Array(starCount * 3);
+    const sizes = new Float32Array(starCount);
+
+    for (let i = 0; i < starCount; i++) {
+      const radius = 6 + Math.random() * 6;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+
+      positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+      positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+      positions[i * 3 + 2] = radius * Math.cos(phi);
+
+      const color = new THREE.Color(this.params.vortexColor);
+      color.toArray(colors, i * 3);
+      sizes[i] = Math.random() * 0.4 + 0.2;
+    }
+
+    const starGeo = new THREE.BufferGeometry();
+    starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    starGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    starGeo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+    const starMat = new THREE.PointsMaterial({
+      size: 0.5, vertexColors: true, sizeAttenuation: true,
+      blending: THREE.AdditiveBlending, transparent: true, opacity: 0.9
+    });
+
+    const stars = new THREE.Points(starGeo, starMat);
+    this.scene.add(stars);
+    this.meshes.push(stars);
+    this.materials.push(starMat);
+  }
+
+  createRainbowTrails() {
+    const trailCount = 12;
+    for (let i = 0; i < trailCount; i++) {
+      const points = [];
+      const segments = 100;
+
+      for (let j = 0; j <= segments; j++) {
+        const t = j / segments;
+        const angle = t * Math.PI * 8 + i * Math.PI * 0.16;
+        const radius = 2.5 + Math.sin(t * Math.PI * 4) * 1;
+        const height = (t - 0.5) * 12;
+
+        points.push(new THREE.Vector3(
+          Math.cos(angle) * radius,
+          height,
+          Math.sin(angle) * radius
+        ));
+      }
+
+      const curve = new THREE.CatmullRomCurve3(points);
+      const tubeGeo = new THREE.TubeGeometry(curve, segments, 0.03, 8, false);
+
+      const colors = ['#ff69b4', '#ff1493', '#ffc0cb', '#ff85c1', '#ffb6c1', '#ff91a4'];
+      const trailMat = new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color(colors[i % colors.length]),
+        transparent: true, opacity: 0.7, metalness: 1.0, roughness: 0.0,
+        emissive: new THREE.Color(colors[i % colors.length]).multiplyScalar(0.6)
+      });
+      this.addPortalShader(trailMat);
+
+      const trail = new THREE.Mesh(tubeGeo, trailMat);
+      this.scene.add(trail);
+      this.meshes.push(trail);
+    }
   }
 
   getRingColor(ring) {
@@ -755,14 +1012,14 @@ class CosmicPortalVisualization {
   setupGUI() {
       const gui = new GUI();
       gui.add(this.params, 'portalComplexity', 1, 8, 1).name('Complejidad').onChange(() => this.createPortalScene());
-      gui.add(this.params, 'crystalCount', 6, 20, 1).name('Corazones').onChange(() => this.createPortalScene());
+      gui.add(this.params, 'crystalCount', 6, 30, 1).name('Corazones').onChange(() => this.createPortalScene());
       gui.addColor(this.params, 'accentColor').name('Color del Amor').onChange(c => {
           this.portalMaterials.forEach(m => {
               if(m.uniforms && m.uniforms.portalColor) m.uniforms.portalColor.value.set(c);
           });
       });
-      gui.add(this.params, 'bloomStrength', 0, 3, 0.1).name('Intensidad').onChange((v) => this.bloomPass.strength = v);
-      gui.add(this.params, 'rotationSpeed', 0, 1, 0.1).name('Velocidad');
+      gui.add(this.params, 'bloomStrength', 0, 5, 0.1).name('Intensidad Brillante').onChange((v) => this.bloomPass.strength = v);
+      gui.add(this.params, 'rotationSpeed', 0, 2, 0.1).name('Velocidad');
       gui.close();
   }
 

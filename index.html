@@ -1,7 +1,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cosmic Dimensional Portal</title>
+  <title>Para Dorita, con todo mi amor ❤️</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; background: #000; font-family: 'Arial', sans-serif; }
@@ -10,13 +10,13 @@
 
     #loading-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(45deg, #000, #1a0033);
+      background: linear-gradient(45deg, #2d1b2e, #4a1a3a, #6b1e3f);
       display: flex; justify-content: center; align-items: center;
       z-index: 9999; transition: opacity 1s ease-out;
     }
     .loader {
       width: 150px; height: 150px; border: 44px solid transparent;
-      border-radius: 50%; border-top-color: #9b59b6; border-bottom-color: #3498db;
+      border-radius: 50%; border-top-color: #ff69b4; border-bottom-color: #ff1493;
       animation: spin 1.5s ease-in-out infinite;
     }
     @keyframes spin {
@@ -31,6 +31,24 @@
       z-index: 100; opacity: 0; transition: opacity 1s ease-in;
     }
 
+    #message-overlay {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      z-index: 200; text-align: center; color: white;
+      pointer-events: none; opacity: 1; transition: opacity 2s ease-out;
+      text-shadow: 0 0 20px rgba(255, 105, 180, 0.8);
+    }
+    #message-overlay h1 {
+      font-size: 3em; font-weight: bold; margin-bottom: 20px;
+      color: #ff69b4; text-shadow: 0 0 30px rgba(255, 105, 180, 1);
+    }
+    #message-overlay p {
+      font-size: 1.5em; margin: 10px 0;
+      color: #ffc0cb; text-shadow: 0 0 15px rgba(255, 192, 203, 0.8);
+    }
+    #message-overlay.fade-out {
+      opacity: 0;
+    }
+
     #control-panel {
       position: fixed;
       top: 20px;
@@ -42,7 +60,7 @@
       background: rgba(0, 0, 0, 0.7);
       padding: 15px;
       border-radius: 15px;
-      border: 1px solid rgba(155, 89, 182, 0.3);
+      border: 1px solid rgba(255, 105, 180, 0.5);
       backdrop-filter: blur(15px);
     }
     .control-row {
@@ -51,8 +69,8 @@
       justify-content: center;
     }
     .control-btn {
-      background: rgba(155, 89, 182, 0.2);
-      border: 1px solid rgba(155, 89, 182, 0.4);
+      background: rgba(255, 105, 180, 0.2);
+      border: 1px solid rgba(255, 105, 180, 0.4);
       color: white;
       width: 50px;
       height: 50px;
@@ -66,10 +84,10 @@
       overflow: hidden;
     }
     .control-btn:hover {
-      background: rgba(155, 89, 182, 0.4);
-      border-color: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 105, 180, 0.4);
+      border-color: rgba(255, 192, 203, 0.9);
       transform: scale(1.1);
-      box-shadow: 0 0 20px rgba(155, 89, 182, 0.6);
+      box-shadow: 0 0 20px rgba(255, 105, 180, 0.8);
     }
     .control-btn:active {
       transform: scale(0.95);
@@ -84,12 +102,12 @@
       width: 100%;
       height: 60px;
       border-radius: 10px;
-      background: linear-gradient(45deg, rgba(155, 89, 182, 0.3), rgba(52, 152, 219, 0.3));
-      border-color: rgba(155, 89, 182, 0.6);
+      background: linear-gradient(45deg, rgba(255, 105, 180, 0.4), rgba(255, 20, 147, 0.4));
+      border-color: rgba(255, 105, 180, 0.7);
     }
     #portal-btn:hover {
-      background: linear-gradient(45deg, rgba(155, 89, 182, 0.5), rgba(52, 152, 219, 0.5));
-      box-shadow: 0 0 25px rgba(155, 89, 182, 0.7);
+      background: linear-gradient(45deg, rgba(255, 105, 180, 0.6), rgba(255, 20, 147, 0.6));
+      box-shadow: 0 0 25px rgba(255, 105, 180, 0.9);
     }
 
     .btn-ripple {
@@ -104,23 +122,23 @@
 
     #portal-indicator {
       position: fixed; top: 20px; left: 20px; z-index: 100;
-      background: rgba(0, 0, 0, 0.8); border: 2px solid rgba(155, 89, 182, 0.5);
+      background: rgba(0, 0, 0, 0.8); border: 2px solid rgba(255, 105, 180, 0.6);
       border-radius: 10px; padding: 15px; backdrop-filter: blur(10px);
       color: rgba(255, 255, 255, 0.9); min-width: 200px;
       opacity: 0; transition: all 0.3s ease;
     }
     #portal-indicator.active {
-      opacity: 1; border-color: rgba(52, 152, 219, 0.8);
-      box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
+      opacity: 1; border-color: rgba(255, 20, 147, 0.9);
+      box-shadow: 0 0 20px rgba(255, 105, 180, 0.5);
     }
     .portal-bar {
       width: 100%; height: 8px; background: rgba(255, 255, 255, 0.2);
       border-radius: 4px; margin-top: 8px; overflow: hidden;
     }
     .portal-fill {
-      height: 100%; background: linear-gradient(90deg, #9b59b6, #3498db);
+      height: 100%; background: linear-gradient(90deg, #ff69b4, #ff1493, #ff69b4);
       border-radius: 4px; transition: width 0.3s ease;
-      box-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+      box-shadow: 0 0 10px rgba(255, 105, 180, 0.7);
     }
   </style>
   <script type="importmap">
@@ -136,34 +154,35 @@
   <div class="loader"></div>
 </div>
 
+<div id="message-overlay">
+  <h1>Para Dorita ❤️</h1>
+  <p>Con todo mi amor</p>
+  <p>✨ Eres mi universo ✨</p>
+</div>
+
 <div id="portal-container"></div>
 
 <div id="info-panel">
-  <p><strong>Dimensional Portal</strong></p>
-  <p>Mouse: Navigate | Double-click: Fullscreen</p>
+  <p><strong>Para mi querida Dorita ❤️</strong></p>
+  <p>Mouse: Navegar | Doble-clic: Pantalla completa</p>
 </div>
 
 <div id="portal-indicator">
-  <div>Portal Stability</div>
-  <div id="portal-status">Stabilizing</div>
+  <div>Nivel de Amor</div>
+  <div id="portal-status">Creciendo...</div>
   <div class="portal-bar">
     <div class="portal-fill" id="portal-fill" style="width: 100%"></div>
   </div>
 </div>
 
 <div id="control-panel">
-  <button class="control-btn" id="portal-btn" title="Activate Portal">
+  <button class="control-btn" id="portal-btn" title="Enviar mi Amor ❤️">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="3"></circle>
-      <path d="M12 1v6m0 6v6"></path>
-      <path d="m21 12-6-3 6-3"></path>
-      <path d="m3 12 6 3-6 3"></path>
-      <path d="m21 12-6 3 6 3"></path>
-      <path d="m3 12 6-3-6-3"></path>
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
     </svg>
   </button>
   <div class="control-row">
-    <button class="control-btn" id="reset-view" title="Reset Camera">
+    <button class="control-btn" id="reset-view" title="Reiniciar Vista">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
         <path d="M21 3v5h-5"></path>
@@ -171,7 +190,7 @@
         <path d="M3 21v-5h5"></path>
       </svg>
     </button>
-    <button class="control-btn" id="randomize" title="Shift Dimensions">
+    <button class="control-btn" id="randomize" title="Cambiar Colores del Amor">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M12 3a6.364 6.364 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
         <path d="m7 14 3-3 3 3"></path>
@@ -207,15 +226,15 @@ class CosmicPortalVisualization {
     this.params = {
       portalComplexity: 4,
       crystalCount: 12,
-      primaryColor: '#9b59b6',
-      secondaryColor: '#3498db',
-      accentColor: '#e74c3c',
-      vortexColor: '#2ecc71',
+      primaryColor: '#ff69b4',
+      secondaryColor: '#ff1493',
+      accentColor: '#ffc0cb',
+      vortexColor: '#ff85c1',
       rotationSpeed: 0.3,
       bloomEnabled: true,
-      bloomStrength: 1.2,
-      bloomRadius: 0.7,
-      bloomThreshold: 0.2,
+      bloomStrength: 1.5,
+      bloomRadius: 0.8,
+      bloomThreshold: 0.15,
       portalIntensity: 1.0,
       dimensionShift: 0
     };
@@ -240,18 +259,28 @@ class CosmicPortalVisualization {
         document.getElementById('portal-indicator').style.opacity = '1';
       }, 300);
     }, 100);
+
+    setTimeout(() => {
+      const messageOverlay = document.getElementById('message-overlay');
+      if (messageOverlay) {
+        messageOverlay.classList.add('fade-out');
+        setTimeout(() => {
+          messageOverlay.style.display = 'none';
+        }, 2000);
+      }
+    }, 5000);
   }
 
   init() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0a0015);
-    this.scene.fog = new THREE.FogExp2(0x1a0033, 0.001);
+    this.scene.background = new THREE.Color(0x1a0a15);
+    this.scene.fog = new THREE.FogExp2(0x2d1b2e, 0.001);
 
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     this.camera.position.set(0, 0, 15);
     this.initialCameraPosition = this.camera.position.clone();
 
-    this.scene.add(new THREE.AmbientLight(0x330066, 0.2));
+    this.scene.add(new THREE.AmbientLight(0x4a1a3a, 0.3));
     
     const mainLight = new THREE.DirectionalLight(0xffffff, 0.6);
     mainLight.position.set(10, 10, 5);
@@ -678,21 +707,21 @@ class CosmicPortalVisualization {
     const status = document.getElementById('portal-status');
     const fill = document.getElementById('portal-fill');
     if (!indicator || !status || !fill) return;
-    
+
     fill.style.width = portalEnergy + '%';
-    
-    if (portalEnergy > 80) { 
-      status.textContent = 'Stable'; 
-      indicator.className = 'active'; 
-    } else if (portalEnergy > 50) { 
-      status.textContent = 'Fluctuating'; 
-      indicator.className = 'active'; 
-    } else if (portalEnergy > 25) { 
-      status.textContent = 'Unstable'; 
-      indicator.className = 'active'; 
-    } else { 
-      status.textContent = 'Collapsed'; 
-      indicator.className = ''; 
+
+    if (portalEnergy > 80) {
+      status.textContent = 'Amor Infinito ❤️';
+      indicator.className = 'active';
+    } else if (portalEnergy > 50) {
+      status.textContent = 'Te amo mucho 💕';
+      indicator.className = 'active';
+    } else if (portalEnergy > 25) {
+      status.textContent = 'Creciendo 💗';
+      indicator.className = 'active';
+    } else {
+      status.textContent = 'Recargando... 💖';
+      indicator.className = '';
     }
   }
 
@@ -714,7 +743,7 @@ class CosmicPortalVisualization {
   }
 
   shiftDimensions() {
-    const colors = ['#9b59b6', '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#e67e22', '#1abc9c', '#34495e'];
+    const colors = ['#ff69b4', '#ff1493', '#ffc0cb', '#ff85c1', '#ff91a4', '#ffb6c1', '#ff007f', '#db7093'];
     this.params.primaryColor = colors[Math.floor(Math.random() * colors.length)];
     this.params.secondaryColor = colors[Math.floor(Math.random() * colors.length)];
     this.params.accentColor = colors[Math.floor(Math.random() * colors.length)];
@@ -725,15 +754,15 @@ class CosmicPortalVisualization {
 
   setupGUI() {
       const gui = new GUI();
-      gui.add(this.params, 'portalComplexity', 1, 8, 1).onChange(() => this.createPortalScene());
-      gui.add(this.params, 'crystalCount', 6, 20, 1).onChange(() => this.createPortalScene());
-      gui.addColor(this.params, 'accentColor').name('Portal Energy').onChange(c => {
+      gui.add(this.params, 'portalComplexity', 1, 8, 1).name('Complejidad').onChange(() => this.createPortalScene());
+      gui.add(this.params, 'crystalCount', 6, 20, 1).name('Corazones').onChange(() => this.createPortalScene());
+      gui.addColor(this.params, 'accentColor').name('Color del Amor').onChange(c => {
           this.portalMaterials.forEach(m => {
               if(m.uniforms && m.uniforms.portalColor) m.uniforms.portalColor.value.set(c);
           });
       });
-      gui.add(this.params, 'bloomStrength', 0, 3, 0.1).onChange((v) => this.bloomPass.strength = v);
-      gui.add(this.params, 'rotationSpeed', 0, 1, 0.1);
+      gui.add(this.params, 'bloomStrength', 0, 3, 0.1).name('Intensidad').onChange((v) => this.bloomPass.strength = v);
+      gui.add(this.params, 'rotationSpeed', 0, 1, 0.1).name('Velocidad');
       gui.close();
   }
 

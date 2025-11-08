@@ -205,6 +205,7 @@
   <div class="portal-bar">
     <div class="portal-fill" id="portal-fill" style="width: 100%"></div>
   </div>
+  <div id="shape-name" style="margin-top: 10px; font-size: 12px; opacity: 0.8; text-align: center;">Corazón ❤️</div>
 </div>
 
 <div id="control-panel">
@@ -295,6 +296,8 @@ class CosmicPortalVisualization {
     this.materials = [];
     this.portalMaterials = [];
     this.time = 0;
+    this.currentShapeIndex = 0;
+    this.shapeTypes = ['heart', 'star', 'butterfly', 'flower', 'infinity', 'rose'];
     
     this.init();
     this.createPortalScene();
@@ -575,8 +578,120 @@ class CosmicPortalVisualization {
     this.materials.push(mat);
   }
 
+  getShapeGeometry(shapeType) {
+    let shape;
+    const scale = 1.2;
+
+    switch(shapeType) {
+      case 'heart':
+        shape = new THREE.Shape();
+        shape.moveTo(0.5 * scale, 0.5 * scale);
+        shape.bezierCurveTo(0.5 * scale, 0.3 * scale, 0.0, -0.1 * scale, 0.0, 0.3 * scale);
+        shape.bezierCurveTo(0.0, 0.6 * scale, 0.0, 0.7 * scale, 0.5 * scale, 1.1 * scale);
+        shape.bezierCurveTo(1.0 * scale, 0.7 * scale, 1.0 * scale, 0.6 * scale, 1.0 * scale, 0.3 * scale);
+        shape.bezierCurveTo(1.0 * scale, -0.1 * scale, 0.5 * scale, 0.3 * scale, 0.5 * scale, 0.5 * scale);
+        break;
+
+      case 'star':
+        shape = new THREE.Shape();
+        const spikes = 5;
+        const outerRadius = 1.0 * scale;
+        const innerRadius = 0.4 * scale;
+        for (let i = 0; i < spikes * 2; i++) {
+          const angle = (i / (spikes * 2)) * Math.PI * 2 - Math.PI / 2;
+          const radius = i % 2 === 0 ? outerRadius : innerRadius;
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          if (i === 0) shape.moveTo(x, y);
+          else shape.lineTo(x, y);
+        }
+        shape.closePath();
+        break;
+
+      case 'butterfly':
+        shape = new THREE.Shape();
+        // Ala izquierda superior
+        shape.moveTo(0, 0);
+        shape.bezierCurveTo(-0.8 * scale, 0.5 * scale, -1.0 * scale, 0.8 * scale, -0.6 * scale, 0.9 * scale);
+        shape.bezierCurveTo(-0.3 * scale, 0.7 * scale, -0.2 * scale, 0.3 * scale, 0, 0);
+        // Ala derecha superior
+        shape.bezierCurveTo(0.2 * scale, 0.3 * scale, 0.3 * scale, 0.7 * scale, 0.6 * scale, 0.9 * scale);
+        shape.bezierCurveTo(1.0 * scale, 0.8 * scale, 0.8 * scale, 0.5 * scale, 0, 0);
+        // Ala derecha inferior
+        shape.bezierCurveTo(0.7 * scale, -0.4 * scale, 0.9 * scale, -0.7 * scale, 0.5 * scale, -0.8 * scale);
+        shape.bezierCurveTo(0.2 * scale, -0.6 * scale, 0.1 * scale, -0.2 * scale, 0, 0);
+        // Ala izquierda inferior
+        shape.bezierCurveTo(-0.1 * scale, -0.2 * scale, -0.2 * scale, -0.6 * scale, -0.5 * scale, -0.8 * scale);
+        shape.bezierCurveTo(-0.9 * scale, -0.7 * scale, -0.7 * scale, -0.4 * scale, 0, 0);
+        break;
+
+      case 'flower':
+        shape = new THREE.Shape();
+        const petals = 8;
+        const petalRadius = 0.6 * scale;
+        for (let i = 0; i < petals; i++) {
+          const angle = (i / petals) * Math.PI * 2;
+          const cx = Math.cos(angle) * petalRadius * 0.5;
+          const cy = Math.sin(angle) * petalRadius * 0.5;
+          if (i === 0) shape.moveTo(0, 0);
+          shape.quadraticCurveTo(
+            Math.cos(angle) * petalRadius + cx,
+            Math.sin(angle) * petalRadius + cy,
+            Math.cos(angle + Math.PI / petals) * petalRadius * 0.5,
+            Math.sin(angle + Math.PI / petals) * petalRadius * 0.5
+          );
+        }
+        shape.closePath();
+        break;
+
+      case 'infinity':
+        shape = new THREE.Shape();
+        const size = 0.6 * scale;
+        shape.moveTo(-size, 0);
+        shape.bezierCurveTo(-size, size * 0.6, -size * 0.5, size * 0.6, 0, 0);
+        shape.bezierCurveTo(size * 0.5, -size * 0.6, size, -size * 0.6, size, 0);
+        shape.bezierCurveTo(size, size * 0.6, size * 0.5, size * 0.6, 0, 0);
+        shape.bezierCurveTo(-size * 0.5, -size * 0.6, -size, -size * 0.6, -size, 0);
+        break;
+
+      case 'rose':
+        shape = new THREE.Shape();
+        const turns = 3;
+        const points = 100;
+        for (let i = 0; i <= points; i++) {
+          const t = (i / points) * turns * Math.PI * 2;
+          const r = scale * 0.5 * Math.sin(turns * t / 2);
+          const x = r * Math.cos(t);
+          const y = r * Math.sin(t);
+          if (i === 0) shape.moveTo(x, y);
+          else shape.lineTo(x, y);
+        }
+        shape.closePath();
+        break;
+
+      default:
+        return this.getShapeGeometry('heart');
+    }
+
+    return shape;
+  }
+
   createPortalCore() {
-    const geo = new THREE.SphereGeometry(0.8, 32, 32);
+    const currentShape = this.shapeTypes[this.currentShapeIndex];
+    const shape = this.getShapeGeometry(currentShape);
+
+    const extrudeSettings = {
+      depth: 0.8,
+      bevelEnabled: true,
+      bevelSegments: 5,
+      steps: 2,
+      bevelSize: 0.15,
+      bevelThickness: 0.15
+    };
+
+    const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    geo.center();
+
     const mat = new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
@@ -594,9 +709,10 @@ class CosmicPortalVisualization {
         void main() {
           vPos = position;
           vNorm = normal;
-          float warp = sin(position.x * 10.0 + time * 3.0) * 0.1;
-          float shift = sin(dimensionShift * 6.28318) * 0.3;
-          vec3 p = position * (1.0 + warp + shift);
+          float warp = sin(position.x * 10.0 + time * 3.0) * 0.05;
+          float pulse = sin(time * 4.0) * 0.15;
+          float shift = sin(dimensionShift * 6.28318) * 0.2;
+          vec3 p = position * (1.0 + warp + pulse + shift);
           gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
         }
       `,
@@ -613,25 +729,29 @@ class CosmicPortalVisualization {
           float noise = sin(vPos.x * 20.0 + time * 4.0) * cos(vPos.z * 15.0 + time * 3.0);
           vec3 baseColor = mix(color1, color2, 0.5 + 0.5 * sin(time * 2.0 + dimensionShift));
           vec3 finalColor = mix(baseColor, color3, noise * 0.3);
-          
+
           float fresnel = pow(1.0 - abs(dot(vNorm, normalize(cameraPosition - vPos))), 3.0);
-          finalColor = mix(finalColor, vec3(1.0), fresnel * 0.5);
-          
+          finalColor = mix(finalColor, vec3(1.0), fresnel * 0.6);
+
           float timeSincePortal = time - pulseTime;
           if(timeSincePortal > 0.0 && timeSincePortal < 1.0) {
               float burst = 1.0 - timeSincePortal;
-              finalColor += vec3(1.0) * burst * 3.0;
+              finalColor += vec3(1.0) * burst * 4.0;
           }
-          
-          gl_FragColor = vec4(finalColor, 0.9);
+
+          gl_FragColor = vec4(finalColor, 0.95);
         }
       `,
-      transparent: true
+      transparent: true,
+      side: THREE.DoubleSide
     });
+
     this.portalMaterials.push(mat);
     const mesh = new THREE.Mesh(geo, mat);
+    mesh.rotation.x = Math.PI;
     this.scene.add(mesh);
     this.meshes.push(mesh);
+    this.coreShape = mesh;
   }
 
   createVortexRings() {
@@ -1006,7 +1126,29 @@ class CosmicPortalVisualization {
     this.params.accentColor = colors[Math.floor(Math.random() * colors.length)];
     this.params.vortexColor = colors[Math.floor(Math.random() * colors.length)];
     this.params.dimensionShift = Math.random();
+
+    // Cambiar a la siguiente forma
+    this.currentShapeIndex = (this.currentShapeIndex + 1) % this.shapeTypes.length;
+
+    this.updateShapeName();
     this.createPortalScene();
+  }
+
+  updateShapeName() {
+    const shapeNames = {
+      'heart': 'Corazón ❤️',
+      'star': 'Estrella ⭐',
+      'butterfly': 'Mariposa 🦋',
+      'flower': 'Flor 🌸',
+      'infinity': 'Infinito ∞',
+      'rose': 'Rosa 🌹'
+    };
+
+    const shapeName = document.getElementById('shape-name');
+    if (shapeName) {
+      const currentShape = this.shapeTypes[this.currentShapeIndex];
+      shapeName.textContent = shapeNames[currentShape] || 'Forma del Amor';
+    }
   }
 
   setupGUI() {
